@@ -56,12 +56,17 @@ if [[ $OPTIND -eq 1 ]]; then
   read GPGYN
 
   if [[ $GPGYN = "y" ]]; then
-    echo "Which user?"
-    echo $GPG_KEYS
     if [[ $GPG_KEYS =~ .*$USERS.* ]]; then
-      echo "Suggested: $USERS"
+      echo "Use suggested: $USERS ? y/N"
+      read SUGGESTED
     fi
-    read GPG
+    if [[ $SUGGESTED = "y" ]]; then
+      GPG=$USERS
+    else
+      echo "Which user?"
+      echo $GPG_KEYS 
+      read GPG
+    fi
   fi
 fi
 
