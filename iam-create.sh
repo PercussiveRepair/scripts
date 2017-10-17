@@ -14,7 +14,7 @@ function usage()
     echo '      -u list of space separated users to create creds for in the form firstname.lastname'
     echo '      -p list of space separated AWS credential profile names to use'
     echo '      -l level of access to grant (AdministratorAccess or ReadOnlyAccess)'
-    echo '      -c y/n - create account with keys only, no password'
+    echo '      -c y/n - create account with console access and keys'
     echo '      -g GPG key to encrypt for'
 }
 
@@ -49,7 +49,7 @@ if [[ $OPTIND -eq 1 ]]; then
   echo "Access level - 1) AdministratorAccess or 2) ReadOnlyAccess or type existing group name to join"
   read LEVEL
 
-  echo "Keys only? No password/console access? y/N"
+  echo "Console access and keys? y/N"
   read CREDS
 
   echo "GPG encrypt? y/N"
@@ -87,7 +87,7 @@ for i in $USERS; do
       GROUP=`aws --profile $p iam add-user-to-group --group-name $LEVEL --user-name $i`
     fi
     KEYS=`aws --profile $p iam create-access-key --user-name $i`
-    if [[ $CREDS != "y" ]]; then
+    if [[ $CREDS == "y" ]]; then
       PWD_GEN=`pwgen -cny 20 1`
       PASS=`aws --profile $p iam create-login-profile --user-name $i --no-password-reset-required --password $PWD_GEN`
       echo "Password: $PWD_GEN" | tee -a $i.$p.creds
