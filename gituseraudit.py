@@ -5,8 +5,6 @@ import time
 import requests
 import csv
 
-updated = time.strftime("%c")
-f = open('users.html','w')
 token = ''
 service_accounts = []
 
@@ -37,18 +35,17 @@ for team,team_id in team_ids.iteritems():
   for team_member in g.get_organization("ConnectedHomes").get_team(team_id).get_members():
     teams.append({'team': team, 'member': team_member.login})
 
-message = """<html>
-<head> <script src="sorttable.js"></script><script src="searchtable.js"></script><link rel="stylesheet" href="//cdn.rawgit.com/yahoo/pure-release/v0.6.0/pure-min.css"></head>
-<body><h2>GitHub Users</h2>
-<p>Updated {updated} UTC</p>
-<form class="pure-form"><input type="search" class="light-table-filter" data-table="order-table" placeholder="Filter"></form>""".format(updated=updated)
 
-print "get members"
+print "get members & collaborators"
 #create members list
 members = []
 service_account_count = 0
 twofadis_users_only = 0
-for user in g.get_organization("ConnectedHomes").get_members():
+gitmembers = g.get_organization("ConnectedHomes").get_members()
+# below works but needs code from https://github.com/PyGithub/PyGithub/pull/533
+gitcollaborators = g.get_organization("ConnectedHomes").get_collaborators()
+gitfulllist = gitmembers + gitcollaborators
+for user in gitfulllist:
   user_teams = []
   for team in teams:
     if team['member'] == user.login:
@@ -74,11 +71,23 @@ for user in g.get_organization("ConnectedHomes").get_members(filter_='2fa_disabl
   twofadis.append(dis)
   if user.login not in service_accounts:
    twofadis_users_only +=1
+for user in g.get_organization("ConnectedHomes").get_outside_collaborators(filter_='2fa_disabled'):
+  dis = user.login
+  twofadis.append(dis)
+  if user.login not in service_accounts:
+   twofadis_users_only +=1
 
 #assemble page
-message += '<p style="background-color: #ef9a9a;">Members with 2FA disabled (excluding Service Accounts): ' + str(twofadis_users_only) + ' out of ' + str(len(members)) + ' total users</p>'
-message += '<p style="background-color: #9FA8DA;">Service Accounts: ' + str(service_account_count) + '</p>'
-message += '<table class="sortable pure-table order-table"><tr><th>User ID</th><th>Name</th><th>Public Email</th><th>2FA Enabled?</th><th>Service Account?</th><th>Teams</th><th>AD User</th><th>AD User Active</th></tr>'
+updated = time.strftime("%c")
+
+page = """<html>
+<head> <script src="sorttable.js"></script><script src="searchtable.js"></script><link rel="stylesheet" href="//cdn.rawgit.com/yahoo/pure-release/v0.6.0/pure-min.css"></head>
+<body><h2>GitHub Users</h2>
+<p>Updated {updated} UTC</p>
+<form class="pure-form"><input type="search" class="light-table-filter" data-table="order-table" placeholder="Filter"></form>""".format(updated=updated)
+page += '<p style="background-color: #ef9a9a;">Members with 2FA disabled (excluding Service Accounts): ' + str(twofadis_users_only) + ' out of ' + str(len(members)) + ' total users</p>'
+page += '<p style="background-color: #9FA8DA;">Service Accounts: ' + str(service_account_count) + '</p>'
+page += '<table class="sortable pure-table order-table"><tr><th>User ID</th><th>Name</th><th>Public Email</th><th>2FA Enabled?</th><th>Service Account?</th><th>Teams</th><th>AD User</th><th>AD User Active</th></tr>'
 print "making page"
 for m in members:
   name = str(m['name'].encode('utf-8')) if m['name'] != None else ''
@@ -86,6 +95,7 @@ for m in members:
   email = str(m['email'].encode('utf-8')) if m['email'] != None else ''
   teams = str(', '.join(m['teams']))
   twofaen = 'No' if login in twofadis else 'Yes'
+  collaborator = 'Yes' if login in 
   service_account = 'Yes' if login in service_accounts else 'No'
   aduserinfo = m['aduserinfo']
   aduseractive = m['aduseractive']
@@ -97,9 +107,10 @@ for m in members:
   if login in service_accounts:
     bgcolor = '#9FA8DA'
 
-  message += """<tr bgcolor = {bgcolor}><td><a href="https://github.com/orgs/ConnectedHomes/people/{login}">{login}</a></td><td>{name}</td><td>{email}</td><td>{twofaen}</td><td>{service_account}</td><td>{teams}</td><td>{aduser}</td><td>{aduseractive}</td></tr>""".format(bgcolor=bgcolor,login=login,name=name,email=email,twofaen=twofaen,service_account=service_account,teams=teams,aduser=aduserinfo,aduseractive=aduseractive)
+  page += """<tr bgcolor = {bgcolor}><td><a href="https://github.com/orgs/ConnectedHomes/people/{login}">{login}</a></td><td>{name}</td><td>{email}</td><td>{twofaen}</td><td>{service_account}</td><td>{teams}</td><td>{aduser}</td><td>{aduseractive}</td></tr>""".format(bgcolor=bgcolor,login=login,name=name,email=email,twofaen=twofaen,service_account=service_account,teams=teams,aduser=aduserinfo,aduseractive=aduseractive)
 
-message += '</table> </body> </html>'
+page += '</table> </body> </html>'
 
-f.write(message)
+f = open('users.html','w')
+f.write(page)
 f.close()
