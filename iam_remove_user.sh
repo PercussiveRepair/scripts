@@ -78,7 +78,7 @@ for p in ${PROFILE}; do
     [[ -z "$INLINEPOLICYARNS" ]] && INLINEPOLICYARNSDELETED="y" && echo "No Inline Policies" || echo -e "${CYAN}Inline Policies${NC}:\n$INLINEPOLICYARNS"
     #find user groups, if none set deleted to true
     IAMUSERGROUPS=$(aws --profile $p iam list-groups-for-user --user-name ${IAMIAMUSER} | jq -r '.Groups[].GroupName' 2>/dev/null)
-    [[ -z "$IAMUSERGROUPS" ]] && IAMUSERGROUPSDELETED="y &&" echo "No User Groups" || echo -e "${CYAN}Groups${NC}:\n$IAMUSERGROUPS"
+    [[ -z "$IAMUSERGROUPS" ]] && IAMUSERGROUPSDELETED="y" && echo "No User Groups" || echo -e "${CYAN}Groups${NC}:\n$IAMUSERGROUPS"
     #find users access/secret keypairs and show status, if none set deleted to true
     ACCESSKEYSSTATUS=$(aws --profile $p iam list-access-keys --user-name ${IAMIAMUSER} | jq -r '.AccessKeyMetadata[] | [.AccessKeyId,.Status]  | @tsv ' 2>/dev/null)
     ACCESSKEYS=$(aws --profile $p iam list-access-keys --user-name ${IAMIAMUSER} | jq -r '.AccessKeyMetadata[] | .AccessKeyId' 2>/dev/null)
