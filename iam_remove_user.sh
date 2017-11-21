@@ -86,6 +86,10 @@ for p in ${PROFILE}; do
     #find login profile, if none set deleted to true
     LOGINPROFILE=$(aws --profile $p iam get-login-profile --user-name ${IAMIAMUSER} 2>/dev/null)
     [[ -z "$LOGINPROFILE" ]] && LOGINDELETED="y" && echo "No Login Profile" || echo "Login Profile exists"
+    #find mfa devices, if none, set deleted to true
+    MFADEVICE=$(aws --profile $p iam list-virtual-mfa-devices | jq -r '.[][] | .User.UserName' | grep ${IAMIAMUSER} 2>/dev/null)
+    MFADEVICESERIAL=$(aws --profile $p iam list-virtual-mfa-devices | jq -r '.[][] | .SerialNumber' | grep ${IAMIAMUSER} 2>/dev/null)
+    [[ -z "$MFADEVICE" ]] && MFADELETED="y" && echo "No MFA Device" || echo "MFA Device attached"
 
     #disable rather than deleting user
     if [[ $DISABLEIAMIAMUSER = "y" ]]; then
@@ -131,7 +135,12 @@ for p in ${PROFILE}; do
         aws --profile $p iam delete-login-profile --user-name ${IAMIAMUSER}
         LOGINDELETED="y"
       fi
-      if [[ LOGINDELETED="y" ]] && [[ ACCESSKEYSDELETED="y" ]] && [[ IAMUSERGROUPSDELETED="y" ]] && [[ INLINEPOLICYARNSDELETED="y" ]] && [[ INLINEPOLICYARNSDELETED="y" ]] && [[ MANAGEDPOLICYARNSDELETED="y" ]]; then
+      if [[ ! -z "$MFADEVICE" ]]; then
+        aws --profile $p iam deactivate-mfa-device --user-name ${IAMIAMUSER} --serial-number ${MFADEVICESERIAL}
+        aws --profile $p iam delete-virtual-mfa-device --serial-number ${MFADEVICESERIAL}
+        MFADELETED="y"
+      fi
+      if [[ MFADELETED="y" ]] && [[ LOGINDELETED="y" ]] && [[ ACCESSKEYSDELETED="y" ]] && [[ IAMUSERGROUPSDELETED="y" ]] && [[ INLINEPOLICYARNSDELETED="y" ]] && [[ INLINEPOLICYARNSDELETED="y" ]] && [[ MANAGEDPOLICYARNSDELETED="y" ]]; then
         aws --profile $p iam delete-user --user-name ${IAMIAMUSER}
         echo "${IAMIAMUSER} deleted"
       fi
