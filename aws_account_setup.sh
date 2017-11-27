@@ -79,21 +79,19 @@ aws iam create-user --user-name ${IAMUSER}
 aws iam attach-user-policy --policy-arn arn:aws:iam::aws:policy/AdministratorAccess --user-name ${IAMUSER}
 PWD=`openssl rand -base64 12`
 aws iam create-login-profile --user-name ${IAMUSER} --password-reset-required --password ${PWD}
-echo "${IAMUSER} / ${PWD}"
-echo "Credentials:"
-IAMCREDS=$(aws iam create-access-key --user-name ${IAMUSER} | jq -r '.[].AccessKeyId, .[].SecretAccessKey')
-echo ${IAMCREDS}
+echo "Admin login profile created"
+IAMCREDS=($(aws iam create-access-key --user-name ${IAMUSER} | jq -r '.[].AccessKeyId, .[].SecretAccessKey')) && ADMIN_ACCESS_KEY=${IAMCREDS[0]} && ADMIN_SECRET_KEY=${IAMCREDS[1]}
+echo "Admin credentials created"
 
 #create initial read only service user
 echo "Creating new read only user aws.events.ro in ${ACCNAME}"
 aws iam create-user --user-name aws.events.ro
 aws iam attach-user-policy --policy-arn arn:aws:iam::aws:policy/ReadOnlyAccess --user-name aws.events.ro
-echo "Credentials:"
 ROCREDS=$(aws iam create-access-key --user-name aws.events.ro | jq -r '.[].AccessKeyId, .[].SecretAccessKey')
-echo ${ROCREDS}
+echo "Read Only credentials created"
 
 #set IAM config
-echo "Creating account alias/login url of https://${ACCNAME}.signin.aws.amazon.com/console"
+echo "Creating account alias/login url"
 ALIAS=''
 ALIASTOTRY=${ACCNAME}
 while [[ -z $ALIAS ]]; do 
@@ -104,29 +102,40 @@ while [[ -z $ALIAS ]]; do
     read ALIASTOTRY
   fi
 done
-echo "Alias ${ALIAS} created"
+echo "Alias https://${ALIAS}.signin.aws.amazon.com/console created"
 echo "Adding password policy"
 aws iam update-account-password-policy --minimum-password-length 12 --allow-users-to-change-password
+echo "Added"
 
+#create concierge email
 echo "Create AWS conceirge email? This will open a new email in your default client. y/n"
 read CREATEEMAIL
 if [[ $CREATEEMAIL = "y" ]]; then
   open "mailto:${CONCIERGEEMAIL}?subject=New account setup&body=Hi ${CONCIERGENAME},  I've created a new account, please can you configure it with our usual settings? ${ACCNAME}  ${ACCNUMBER}  Thanks "
 fi
+
+#Output results
+echo ""
+echo "Account Creation Complete"
 echo "${ACCNAME}  ${ACCNUMBER}"
-echo "console url: ${ALIAS}"
+echo "console url: https://${ALIAS}.signin.aws.amazon.com/console"
 echo "root username: awsbilling+${ACCNAME}@bgch.co.uk"
+echo "support email: ${ACCNAME}.awsnotifications@hivehome.com"
+echo "Admin user creds"
 echo "${IAMUSER} / ${PWD}"
-echo ${IAMCREDS}
-echo "aws.events.ro"
+echo "aws_access_key_id = ${ADMIN_ACCESS_KEY}"
+echo "aws_secret_access_key = ${ADMIN_SECRET_KEY}"
+echo "aws.events.ro creds"
 echo "${ROCREDS}"
 
 echo "All done. Now you need to:"
-echo " * Add the aws.events.ro credentials to the list in puppet-ops heiradata"
-echo " * Contact the AWS concierge to complete the setup of the account (using the email created above if you agreed to it)"
+echo " * Add the aws.events.ro credentials to the list in puppet-ops hieradata"
+echo " * Contact the AWS concierge to complete the setup of the account"
 echo " * Set a root password using the forgotten password link here: https://console.aws.amazon.com/?nc2=h_m_mc"
-echo " * Add that password to OpsBag"
+echo " * Add that password to OpsBag under aws/${ACCNAME}"
 echo " * Enable MFA on the root account and add to the MFA phone"
 echo " * Screenshot the MFA QR code, gpg encrypt it and add it to the ops-secrets repo"
+echo " * Get a new gmail group created called ${ACCNAME}.awsnotifications@hivehome.com and add the product teams email to it as member"
+echo " * Set that new ${ACCNAME}.awsnotifications@hivehome.com email as the Operations and Security Alternative Contacts in the new account: https://console.aws.amazon.com/billing/home?#/account" 
 echo " * Fill in the Confluence page with the new account details here: "
 echo "    https://confluence.bgchtest.info/display/SRE/AWS+Accounts+-+List+and+Creation+Process#AWSAccounts-ListandCreationProcess-newaccountsetup"
