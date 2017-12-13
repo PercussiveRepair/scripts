@@ -5,6 +5,7 @@
 MFALOCATION="/Users/jayharrison/Desktop/mfa"
 SECRETSREPO="/Users/jayharrison/repos/ops-secrets"
 
+ls $MFALOCATION
 mv $MFALOCATION/*.png $SECRETSREPO/passwords/root_mfa_qr/
 for i in $(ls $SECRETSREPO/passwords/root_mfa_qr/*.png); do
   echo "encrypting $i"
