@@ -1,4 +1,4 @@
-#! /usr/local/bin/python
+#! /usr/local/bin/python2
 
 # enumerates boxes in aws accounts by envronment and role
 
