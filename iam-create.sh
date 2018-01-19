@@ -92,8 +92,8 @@ for i in $USERS; do
       PASS=`aws --profile $p iam create-login-profile --user-name $i --no-password-reset-required --password $PWD_GEN`
       echo "Password: $PWD_GEN" | tee -a $i.$p.creds
     fi
-    ID=`echo $KEYS | cut -d "\"" -f 22`
-    KEY=`echo $KEYS | cut -d "\"" -f 18`
+    ID=`echo $KEYS | jq -r .[].AccessKeyId`
+    KEY=`echo $KEYS | jq -r .[].SecretAccessKey`
     echo "URL: https://$p.signin.aws.amazon.com/console" | tee -a $i.$p.creds
     echo "aws_access_key_id = $ID" | tee -a $i.$p.creds
     echo "aws_secret_access_key = $KEY" | tee -a $i.$p.creds
