@@ -9,11 +9,11 @@ regions=$(aws ec2 describe-regions --output text | cut -f 3)
 echo "account,region,instanceid,tags"
 for profile in $profiles; do 
   for region in $regions; do
-    idsandtags=$(aws --region=$region --profile=$profile ec2 describe-instances | jq -r '.Reservations[].Instances[] |[ .InstanceId, .State.Name, .KeyName, .InstanceType, .LaunchTime, (.Tags[]? | .Value)] | @csv')
+    idsandtags=$(aws --region=$region --profile=$profile ec2 describe-volumes | jq -r '.Volumes[] | [.VolumeId, .State, .Size, (.Tags[]? | .Key), (.Tags[]? | .Value)] | @csv')
     IFS=$'\n' 
     for idandtag in $idsandtags; do
       ec2info=$(echo $idandtag | tr -d \")
-      id=$(echo $ec2info | cut -f 1 -d ",")
+      #id=$(echo $ec2info | cut -f 1 -d ",")
       #LEN=$(echo ${#id})
       #if [ $LEN -lt 11 ]; then
         echo "$profile,$region,$ec2info"
