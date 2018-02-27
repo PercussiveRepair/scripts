@@ -62,7 +62,7 @@ for instance in groups['Reservations']:
             env_tag = t['Value']
           if 'role' in t['Key'].lower():
             role_tag = t['Value']
-      iplist.append([env_tag, role_tag, i['InstanceId'], i['PrivateIpAddress'], i['PublicDnsName']])
+      iplist.append([env_tag, role_tag, i['InstanceId'], i['PrivateIpAddress'], i['PublicDnsName']] )
 
 iplist.sort()
 

@@ -14,10 +14,10 @@ for profile in $profiles; do
     for idandtag in $idsandtags; do
       ec2info=$(echo $idandtag | tr -d \")
       id=$(echo $ec2info | cut -f 1 -d ",")
-      #LEN=$(echo ${#id})
-      #if [ $LEN -lt 11 ]; then
+      LEN=$(echo ${#id})
+      if [ $LEN -lt 11 ]; then
         echo "$profile,$region,$ec2info"
-      #fi
+      fi
     done
   done
 done
