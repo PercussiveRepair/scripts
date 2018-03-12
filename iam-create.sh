@@ -37,7 +37,7 @@ shift "$((OPTIND-1))"
 # if no cli options then ask for the
 if [[ $OPTIND -eq 1 ]]; then
   PROFILE_LIST=`grep -oE '\[.*?\]' ~/.aws/credentials | grep -v -e default -e awsbillingmaster | sort -t[ -k2 | tr '\n' '  '`
-  GPG_KEYS=`gpg --list-keys | grep uid | awk -F '[<>]' '{for (i=2; i<NF; i+=2) printf "<%s>%s", $i, OFS; print ""}' | sort -t'<' -k2 -f -u | tr '\n' '  '`
+  GPG_KEYS=`gpg --list-keys | grep uid | awk -F '[<>]' '{for (i=2; i<NF; i+=2) printf "<%s>%s", $i, OFS; print ""}' | sort -t'<' -k2 -f -u | tr '\n' '  ' | tr '[:upper:]' '[:lower:]'`
 
   echo "Usernames, space separated"
   read USERS
