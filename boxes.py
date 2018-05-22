@@ -31,6 +31,7 @@ else:
 profiles = open(profile_location)
 if account in profiles.read():
   profile = account
+  print(profile)
 else:
   print "Unrecognised profile"
   sys.exit(0)
