@@ -1,6 +1,6 @@
 #!/bin/sh
 
-# obtains all the instances in all the regions in all the accounts that have old (short) ids
+# gets all snapshots in all regions with shortids
 
 profiles=$(grep -oE '\[.*?\]' ~/.aws/credentials | grep -Ev 'default|awsbillingmaster' | tr -d '[]' | sort)
 #profiles="connectedhome-dev"
