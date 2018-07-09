@@ -1,0 +1,130 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: Deploy Cross Account IAM Role for Slack/IAM Federator
+
+Metadata:
+  AWS::CloudFormation::Interface:
+    ParameterGroups:
+      - Label:
+          default: AccountConfig
+        Parameters:
+          - AccountARN
+      - Label:
+          default: LambdaConfig
+        Parameters:
+          - LambdaARN
+    ParameterLabels:
+      AccountConfig:
+        default: ARN for root account that lambda runs in
+      LambdaConfig:
+        default: ARN for Slack/IAM lambda code
+
+Parameters:
+  AccountARN:
+    Type: String
+    Description: ARN of Account that runs the Lambda for cross account access
+  LambdaARN:
+    Type: String
+    Description: Required for cross account IAM Role generation
+
+Resources:
+
+  CrossAccountPowerUser:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          -
+            Effect: Allow
+            Principal:
+              AWS:
+                - !Sub "${AccountARN}"
+            Action:
+              - sts:AssumeRole
+      ManagedPolicyArns:
+        - "arn:aws:iam::aws:policy/PowerUserAccess"
+      Path: /
+      RoleName: CrossAccountPowerUser
+      MaxSessionDuration: 43200
+
+  CrossAccountReadOnly:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          -
+            Effect: Allow
+            Principal:
+              AWS:
+                - !Sub "${AccountARN}"
+            Action:
+              - sts:AssumeRole
+      ManagedPolicyArns:
+        - "arn:aws:iam::aws:policy/ReadOnlyAccess"
+      Path: /
+      RoleName: CrossAccountReadOnly
+      MaxSessionDuration: 43200
+
+  ReadOnlyDenyData:
+    Type: AWS::IAM::Policy
+    Properties:
+      PolicyName: ReadOnlyDenyData
+      PolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          -
+            Effect: "Deny"
+            Action:
+              - "cloudformation:GetTemplate"
+              - "dynamodb:GetItem"
+              - "dynamodb:BatchGetItem"
+              - "dynamodb:Query"
+              - "dynamodb:Scan"
+              - "ec2:GetConsoleOutput"
+              - "kinesis:Get*"
+              - "lambda:GetFunction"
+              - "s3:GetObject"
+              - "sdb:Select*"
+              - "sqs:ReceiveMessage"
+            Resource: "*"
+      Roles:
+        - Ref: "CrossAccountReadOnly"
+
+  CrossAccountSysAdmin:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          -
+            Effect: Allow
+            Principal:
+              AWS:
+                - !Sub "${AccountARN}"
+            Action:
+              - sts:AssumeRole
+      ManagedPolicyArns:
+        - "arn:aws:iam::aws:policy/job-function/SystemAdministrator"
+      Path: /
+      RoleName: CrossAccountSysAdmin
+      MaxSessionDuration: 43200
+
+  CrossAccountAdminUser:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          -
+            Effect: Allow
+            Principal:
+              AWS:
+                - !Sub "${AccountARN}"
+            Action:
+              - sts:AssumeRole
+      ManagedPolicyArns:
+        - "arn:aws:iam::aws:policy/AdministratorAccess"
+      Path: /
+      RoleName: CrossAccountAdminUser
+      MaxSessionDuration: 43200

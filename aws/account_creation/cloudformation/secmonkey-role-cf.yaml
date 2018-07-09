@@ -1,0 +1,178 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: Deploy Cross Account IAM Role & Policy for Security Monkey
+
+Metadata:
+  AWS::CloudFormation::Interface:
+    Properties:
+      Tags:
+      -
+        Key: "product"
+        Value: "sre"
+      -
+        Key: "role"
+        Value: "securitymonkeyrole"
+
+Resources:
+
+  SecurityMonkey:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          -
+            Effect: Allow
+            Principal:
+              AWS:
+                - "arn:aws:iam::738122424235:role/SecurityMonkeyInstanceProfile"
+                - "arn:aws:iam::499223386158:role/SecurityMonkeyInstanceProfile"
+            Action:
+              - sts:AssumeRole
+      Path: /
+      RoleName: SecurityMonkey
+
+  SecurityMonkeyPolicy:
+    Type: AWS::IAM::Policy
+    Properties:
+      PolicyName: SecurityMonkeyPolicy
+      PolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          -
+            Effect: "Allow"
+            Action:
+              - "acm:describecertificate"
+              - "acm:listcertificates"
+              - "cloudtrail:describetrails"
+              - "cloudtrail:gettrailstatus"
+              - "config:describeconfigrules"
+              - "config:describeconfigurationrecorders"
+              - "directconnect:describeconnections"
+              - "ec2:describeaddresses"
+              - "ec2:describedhcpoptions"
+              - "ec2:describeflowlogs"
+              - "ec2:describeimages"
+              - "ec2:describeimageattribute"
+              - "ec2:describeinstances"
+              - "ec2:describeinternetgateways"
+              - "ec2:describekeypairs"
+              - "ec2:describenatgateways"
+              - "ec2:describenetworkacls"
+              - "ec2:describenetworkinterfaces"
+              - "ec2:describeregions"
+              - "ec2:describeroutetables"
+              - "ec2:describesecuritygroups"
+              - "ec2:describesnapshots"
+              - "ec2:describesnapshotattribute"
+              - "ec2:describesubnets"
+              - "ec2:describetags"
+              - "ec2:describevolumes"
+              - "ec2:describevpcendpoints"
+              - "ec2:describevpcpeeringconnections"
+              - "ec2:describevpcs"
+              - "ec2:describevpcattribute"
+              - "ec2:describevpcclassiclink"
+              - "ec2:describevpcclassiclinkdnssupport"
+              - "ec2:describeflowlogs"
+              - "ec2:describevpnconnections"
+              - "ec2:describevpngateways"
+              - "elasticloadbalancing:describeloadbalancerattributes"
+              - "elasticloadbalancing:describeloadbalancerpolicies"
+              - "elasticloadbalancing:describeloadbalancers"
+              - "elasticloadbalancing:describelisteners"
+              - "elasticloadbalancing:describerules"
+              - "elasticloadbalancing:describesslpolicies"
+              - "elasticloadbalancing:describetags"
+              - "elasticloadbalancing:describetargetgroups"
+              - "elasticloadbalancing:describetargetgroupattributes"
+              - "elasticloadbalancing:describetargethealth"
+              - "es:describeelasticsearchdomainconfig"
+              - "es:listdomainnames"
+              - "glacier:DescribeVault"
+              - "glacier:GetVaultAccessPolicy"
+              - "glacier:ListTagsForVault"
+              - "glacier:ListVaults"
+              - "iam:getaccesskeylastused"
+              - "iam:getgroup"
+              - "iam:getgrouppolicy"
+              - "iam:getloginprofile"
+              - "iam:getpolicyversion"
+              - "iam:getrole"
+              - "iam:getrolepolicy"
+              - "iam:getservercertificate"
+              - "iam:getuser"
+              - "iam:getuserpolicy"
+              - "iam:listaccesskeys"
+              - "iam:listattachedgrouppolicies"
+              - "iam:listattachedrolepolicies"
+              - "iam:listattacheduserpolicies"
+              - "iam:listentitiesforpolicy"
+              - "iam:listgrouppolicies"
+              - "iam:listgroups"
+              - "iam:listinstanceprofilesforrole"
+              - "iam:listmfadevices"
+              - "iam:listpolicies"
+              - "iam:listrolepolicies"
+              - "iam:listroles"
+              - "iam:listsamlproviders"
+              - "iam:listservercertificates"
+              - "iam:listsigningcertificates"
+              - "iam:listuserpolicies"
+              - "iam:listusers"
+              - "kms:describekey"
+              - "kms:getkeypolicy"
+              - "kms:getkeyrotationstatus"
+              - "kms:listaliases"
+              - "kms:listgrants"
+              - "kms:listkeypolicies"
+              - "kms:listkeys"
+              - "lambda:getfunctionconfiguration"
+              - "lambda:getpolicy"
+              - "lambda:listaliases"
+              - "lambda:listeventsourcemappings"
+              - "lambda:listtags"
+              - "lambda:listversionsbyfunction"
+              - "lambda:listfunctions"
+              - "rds:describedbclusters"
+              - "rds:describedbclustersnapshots"
+              - "rds:describedbinstances"
+              - "rds:describedbsecuritygroups"
+              - "rds:describedbsnapshots"
+              - "rds:describedbsnapshotattributes"
+              - "rds:describedbsubnetgroups"
+              - "redshift:describeclusters"
+              - "route53:listhostedzones"
+              - "route53:listresourcerecordsets"
+              - "route53domains:listdomains"
+              - "route53domains:getdomaindetail"
+              - "s3:getaccelerateconfiguration"
+              - "s3:getbucketacl"
+              - "s3:getbucketcors"
+              - "s3:getbucketlocation"
+              - "s3:getbucketlogging"
+              - "s3:getbucketnotification"
+              - "s3:getbucketpolicy"
+              - "s3:getbuckettagging"
+              - "s3:getbucketversioning"
+              - "s3:getbucketwebsite"
+              - "s3:getlifecycleconfiguration"
+              - "s3:listbucket"
+              - "s3:listallmybuckets"
+              - "s3:getreplicationconfiguration"
+              - "s3:getanalyticsconfiguration"
+              - "s3:getmetricsconfiguration"
+              - "s3:getinventoryconfiguration"
+              - "ses:getidentityverificationattributes"
+              - "ses:listidentities"
+              - "ses:listverifiedemailaddresses"
+              - "ses:sendemail"
+              - "sns:gettopicattributes"
+              - "sns:listsubscriptionsbytopic"
+              - "sns:listtopics"
+              - "sqs:getqueueattributes"
+              - "sqs:listqueues"
+              - "sqs:listqueuetags"
+              - "sqs:listdeadlettersourcequeues"
+            Resource: "*"
+      Roles:
+        - Ref: "SecurityMonkey"
