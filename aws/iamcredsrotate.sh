@@ -3,7 +3,7 @@
 # rotates all IAM creds in .aws/credentials 
 
 USER=$1
-for i in $(grep -oE '\[.*?\]' ~/.aws/credentials | grep -Ev 'default' | tr -d '[]' | sort); do
+for i in aws-dmz-mfa; do
   OLDKEY=$(aws --profile ${i} iam list-access-keys --user-name ${USER} | jq -r '.AccessKeyMetadata[].AccessKeyId')
   NEWKEYS=$(aws --profile ${i} iam create-access-key --user-name ${USER} | jq -r '.AccessKey | [ .AccessKeyId, .SecretAccessKey ] | @csv')
   echo "${i}:"

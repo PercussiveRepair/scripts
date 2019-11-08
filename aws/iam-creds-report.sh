@@ -27,9 +27,8 @@ olderthanninety() {
 }
 
 # list accounts
-accounts=$(grep -oE '\[.*?\]' ~/.aws/credentials | grep -Ev 'default' | tr -d '[]' | sort)
-#accounts="honeycomb-dev"
-
+#accounts=$(grep -oE '\[aws-.*?\]' ~/.aws/credentials | grep -Ev 'aws-dmz-mfa' | tr -d '[]')
+accounts="aws-hipaa"
 # Call report generation
 for account in $accounts; do
   aws --profile=${account} iam generate-credential-report >/dev/null
@@ -77,9 +76,9 @@ for account in $accounts; do
 
       # reassemble line
       echo -n "$account, ${user_array[0]}, ${user_array[1]}, ${user_array[2]}, "
-      
+
       if [[ $1 == "file" ]]; then
-        
+
         if olderthanninety "${user_array[4]}"; then
           echo -n "${user_array[3]}, ${user_array[4]}, true, "
         else
@@ -108,7 +107,7 @@ for account in $accounts; do
         else
           echo -n "${user_array[3]}, ${user_array[4]}, "
         fi
-        
+
         #check for first access key existence and age
         if olderthanninety "${user_array[10]}" && [[ ${user_array[8]} == "true" ]]; then
           echo -en "${RED}${user_array[8]}, ${user_array[9]}, ${user_array[10]}, ${NC}"
@@ -117,7 +116,7 @@ for account in $accounts; do
         else
           echo -n "${user_array[8]}, ${user_array[9]}, ${user_array[10]}, "
         fi
-        
+
         #check for second access key existence and age
         if olderthanninety "${user_array[15]}" && [[ ${user_array[13]} == "true" ]]; then
           echo -en "${RED}${user_array[13]}, ${user_array[14]}, ${user_array[15]}${NC}"
@@ -126,10 +125,9 @@ for account in $accounts; do
         else
           echo -n "${user_array[13]}, ${user_array[14]}, ${user_array[15]}"
         fi
-      
+
         echo ""
       fi
     fi
-  done 
-done 
-
+  done
+done
